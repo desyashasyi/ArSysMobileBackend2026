@@ -9,7 +9,7 @@ services:
   nginx:
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "8000:8080"
 
   # --- UBAH KE MYSQL ---
   mysql:
