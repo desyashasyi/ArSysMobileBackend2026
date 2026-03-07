@@ -1,22 +1,18 @@
 services:
   app:
-    build:
-      target: dev
+    restart: unless-stopped
     environment:
       PHP_IDE_CONFIG: "serverName=stage"
-    restart: unless-stopped
 
   nginx:
     restart: unless-stopped
     ports:
-      - "8000:8080"
+      - "8081:80" # Port 8081 dipilih agar tidak bentrok dengan Port 80 Ubuntu
 
-  # --- UBAH KE MYSQL ---
   mysql:
     restart: unless-stopped
     ports:
-      - "3307:3307" # Akses dari DBeaver/Laptop pakai port 3307
-  # ---------------------
+      - "3307:3306" # Luar (Host): 3307, Dalam (Container): 3306
 
   redis:
     restart: unless-stopped
