@@ -8,7 +8,7 @@ services:
                 WWWUSER: ${WWWUSER}
                 WWWGROUP: ${WWWGROUP}
         restart: always
-        container_name: st-app
+        container_name: ArSysMobile-app
         working_dir: /var/www
         ports:
             - "8000:8000"
@@ -25,7 +25,7 @@ services:
 
     nginx:
         image: nginx:alpine
-        container_name: st-nginx
+        container_name: ArSysMobile-nginx
         restart: always
         ports:
             - "80:80"
@@ -40,7 +40,7 @@ services:
     # --- BAGIAN INI DIUBAH DARI POSTGRES KE MYSQL ---
     mysql:
         image: mysql:8.0
-        container_name: st-mysql
+        container_name: ArSysMobile-mysql
         restart: always
         environment:
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -54,12 +54,12 @@ services:
         networks:
             - WebFPTE
         ports:
-            - "3311:3306" # Port default internal
+            - "3307:3307" # Port default internal
     # -----------------------------------------------
 
     redis:
         image: redis:alpine
-        container_name: st-redis
+        container_name: ArSysMobile-redis
         restart: always
         volumes:
             - redis_data:/data
