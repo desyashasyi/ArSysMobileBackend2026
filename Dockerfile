@@ -1,58 +1,65 @@
-# Gunakan PHP 8.2 dengan FPM
-FROM php:8.2-fpm
+# 1. Gunakan PHP 8.4 FPM sesuai kebutuhan terbaru Anda
+FROM php:8.4-fpm
 
-# Tambahkan command untuk membuat symlink saat container start
-RUN echo "#!/bin/sh\n\
-mkdir -p /var/www/watcher \n\
-ln -sf /mnt/fet-results /var/www/watcher/fet-results \n\
-exec php-fpm" > /usr/local/bin/startup
-RUN chmod +x /usr/local/bin/startup
+# 2. Definisikan Argument User (Gunakan default 1000 sesuai .env)
+ARG WWWUSER=1000
+ARG WWWGROUP=1000
 
-ENTRYPOINT ["/usr/local/bin/startup"]
-
-# Install dependensi sistem
+# 3. Install Dependensi Sistem
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libicu-dev \
     zip \
     unzip \
     git \
     curl \
     gnupg \
     ca-certificates \
-    sudo
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extension
-RUN docker-php-ext-install pdo pdo_mysql mbstring xml zip
+# 4. Install PHP Extensions menggunakan script helper (Lebih stabil & cepat) [cite: 3, 5]
+# Menambahkan 'intl' untuk memperbaiki RuntimeException sebelumnya
+ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
+RUN chmod +x /usr/local/bin/install-php-extensions && \
+    install-php-extensions gd pdo pdo_mysql mbstring xml zip intl bcmath redis pcntl sockets
 
-# Install Composer
+# 5. Install Node.js (Versi 22 sesuai file Dockerfile asli Anda) [cite: 2, 3]
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    npm install -g npm
+
+# 6. Install Composer [cite: 4]
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install Node.js LTS (misal versi 20.x)
-# Tambahkan setelah baris RUN apt-get update ...
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs
+# 7. Set Working Directory
+WORKDIR /var/www
 
+# 8. Setup Symlink & Startup Script
+# Memindahkan symlink ke entrypoint agar dijalankan setiap container start
+RUN echo "#!/bin/sh\n\
+mkdir -p /var/www/watcher \n\
+ln -sf /mnt/fet-results /var/www/watcher/fet-results \n\
+# Pastikan folder storage ada sebelum start\n\
+mkdir -p /var/www/storage/framework/sessions /var/www/storage/framework/views /var/www/storage/framework/cache \n\
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \n\
+exec php-fpm" > /usr/local/bin/startup && \
+chmod +x /usr/local/bin/startup
 
-# Set working directory
-WORKDIR /var/www/html
+# 9. Sync User ID dengan Host (Penting untuk izin file di Linux) [cite: 2, 4]
+RUN groupmod -g ${WWWGROUP} www-data && \
+    usermod -u ${WWWUSER} -g ${WWWGROUP} www-data
+
+# 10. Copy Source Code & Set Permissions [cite: 6]
 COPY . .
+RUN chown -R www-data:www-data /var/www
 
-# Permission Laravel
-RUN mkdir -p /var/www/storage /var/www/bootstrap/cache \
-    && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
-
-RUN mkdir -p /var/www/html/storage/app/fet-results && \
-    chown -R www-data:www-data /var/www/html/storage/app/fet-results && \
-    chmod -R 775 /var/www/html/storage/app/fet-results
-
-# Set user untuk Laravel
-RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
-
-# Expose port untuk FPM
+# 11. Port & Entrypoint
 EXPOSE 9000
-
-# Jalankan php-fpm
-CMD ["php-fpm"]
+ENTRYPOINT ["/usr/local/bin/startup"]
