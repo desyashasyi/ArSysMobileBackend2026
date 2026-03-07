@@ -9,11 +9,6 @@ services:
     ports:
       - "8081:80" # Port 8081 dipilih agar tidak bentrok dengan Port 80 Ubuntu
 
-  mysql:
-    restart: unless-stopped
-    ports:
-      - "3307:3306" # Luar (Host): 3307, Dalam (Container): 3306
-
   redis:
     restart: unless-stopped
     ports:
