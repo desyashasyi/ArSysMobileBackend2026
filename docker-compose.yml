@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.7'
 
 services:
   # PHP Application
@@ -45,4 +45,4 @@ services:
 
 networks:
   WebFPTE:
-    external: true # Memberitahu docker ini network yang sudah ada di luar file inidw
+    external: true # Memberitahu docker ini network yang sudah ada di luar file ini
