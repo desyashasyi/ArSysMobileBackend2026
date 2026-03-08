@@ -20,7 +20,7 @@ services:
     depends_on:
       - redis
     networks:
-      - webFPTE # Menghubungkan ke network bersama
+      - WebFPTE # MENYESUAIKAN NAMA NETWORK
 
   nginx:
     image: nginx:alpine
@@ -34,15 +34,15 @@ services:
     depends_on:
       - app
     networks:
-      - webFPTE
+      - WebFPTE # MENYESUAIKAN NAMA NETWORK
 
   redis:
     image: redis:alpine
     container_name: ArSysMobile-redis
     restart: always
     networks:
-      - webFPTE
+      - WebFPTE # MENYESUAIKAN NAMA NETWORK
 
 networks:
-  webFPTE:
-    external: true # Memberitahu docker ini network yang sudah ada di luar file ini
+  WebFPTE:
+    external: true # Memberitahu docker ini network yang sudah ada di luar file inidw
