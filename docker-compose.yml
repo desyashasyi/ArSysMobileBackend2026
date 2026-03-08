@@ -42,3 +42,7 @@ services:
     restart: always
     networks:
       - WebFPTE # MENYESUAIKAN NAMA NETWORK
+
+networks:
+  WebFPTE:
+    external: true # Memberitahu docker ini network yang sudah ada di luar file ini
