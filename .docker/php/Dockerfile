@@ -46,6 +46,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY .docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # 5. Setup Supervisor
+COPY .docker/supervisord.conf /etc/supervisord.conf # <-- DIPINDAHKAN KE SINI
 RUN mkdir -p /var/log/supervisor \
     && touch /var/log/supervisord.log /var/log/supervisord.err \
     && chown -R www-data:www-data /var/log/supervisor /var/log/supervisord.* \
@@ -78,7 +79,6 @@ CMD ["supervisord", "-c", "/etc/supervisord.conf"]
 FROM base AS prod
 
 COPY . /var/www
-COPY .docker/supervisord.conf /etc/supervisord.conf
 
 RUN composer install --no-dev --optimize-autoloader \
     && chown -R www-data:www-data /var/www
